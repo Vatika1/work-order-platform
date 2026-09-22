@@ -1,3 +1,32 @@
 spring:
   application:
     name: work-order-platform
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  cache:
+    type: caffeine
+
+server:
+  servlet:
+    context-path: /api/v1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,modulith
+
+app:
+  jwt:
+    issuer: work-order-platform
+    access-ttl: 15m
+    refresh-ttl: 7d
+  aws:
+    region: ca-central-1
+    s3:
+      bucket: work-order-files
+      presign-ttl: 10m

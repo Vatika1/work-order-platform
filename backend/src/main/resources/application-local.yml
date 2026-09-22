@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/workorder
+    username: workorder
+    password: workorder
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+app:
+  jwt:
+    secret: local-dev-secret-change-me-this-must-be-at-least-32-bytes-long
+  aws:
+    endpoint: http://localhost:4566
+    access-key: test
+    secret-key: test
