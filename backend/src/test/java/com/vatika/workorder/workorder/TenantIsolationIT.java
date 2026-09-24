@@ -10,6 +10,8 @@ import com.vatika.workorder.identity.model.User;
 import com.vatika.workorder.identity.repository.UserRepository;
 import com.vatika.workorder.workorder.dto.CreateWorkOrderRequest;
 import com.vatika.workorder.workorder.dto.WorkOrderResponse;
+import com.vatika.workorder.workorder.repository.WorkOrderRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,8 @@ public class TenantIsolationIT extends AbstractIntegrationTest{
     @Autowired
     UserRepository userRepository;
     @Autowired
+    WorkOrderRepository workOrderRepository;
+    @Autowired
     PasswordEncoder passwordEncoder;
 
     @BeforeEach
@@ -49,6 +53,13 @@ public class TenantIsolationIT extends AbstractIntegrationTest{
         userRepository.save(new User("alice@acme.com", hash, "Alice", Role.CLIENT_USER, acmeId));
         userRepository.save(new User("bob@globex.com", hash, "Bob", Role.CLIENT_USER, globexId));
 
+    }
+
+    @AfterEach
+    void cleanup() {
+        workOrderRepository.deleteAll();
+        userRepository.deleteAll();
+        clientRepository.deleteAll();
     }
 
     private String login(String email){
