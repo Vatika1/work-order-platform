@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
@@ -39,6 +40,17 @@ public class GlobalExceptionHandler {
         ErrorResponse body = new ErrorResponse(Instant.now(), status.value(), status.getReasonPhrase(),
                 "Validation failed", request.getRequestURI(), details);
         return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException ex,
+                                                        HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "Operation not permitted for this account", request);
     }
 
     @ExceptionHandler(Exception.class)
