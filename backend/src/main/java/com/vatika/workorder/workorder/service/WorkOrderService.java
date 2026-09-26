@@ -7,6 +7,7 @@ import com.vatika.workorder.workorder.dto.CreateWorkOrderRequest;
 import com.vatika.workorder.workorder.dto.WorkOrderResponse;
 import com.vatika.workorder.workorder.model.WorkOrder;
 import com.vatika.workorder.workorder.model.WorkOrderStatus;
+import com.vatika.workorder.workorder.model.WorkOrderTransitions;
 import com.vatika.workorder.workorder.repository.WorkOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -53,5 +54,18 @@ public class WorkOrderService {
                 .orElseThrow(() -> new NotFoundException("Work order not found"));
 
         return WorkOrderResponse.from(workOrder);
+    }
+
+    @Transactional
+    public WorkOrderResponse transition(UUID id, WorkOrderStatus target){
+        UUID clientId = TenantContext.require();
+        WorkOrder workOrder =workOrderRepository.findByIdAndClientId(id, clientId)
+                .orElseThrow(() -> new NotFoundException("Work order not found"));
+
+        WorkOrderTransitions.canTransition(workOrder.getStatus(), target);
+        workOrder.setStatus(target);
+        WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+
+        return WorkOrderResponse.from(savedWorkOrder);
     }
 }
