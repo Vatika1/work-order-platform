@@ -15,3 +15,5 @@ app:
     endpoint: http://localhost:4566
     access-key: test
     secret-key: test
+  s3:
+    bucket: vatika-work-order-staging-files
