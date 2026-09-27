@@ -40,3 +40,11 @@ module "ecs" {
   bucket_name       = module.s3.bucket_name
   bucket_arn        = module.s3.bucket_arn
 }
+
+module "github_oidc" {
+  source             = "../../modules/github-oidc"
+  name               = var.name
+  github_repo        = "Vatika1/work-order-platform"
+  ecr_repository_arn = module.ecr.repository_arn
+  ecs_service_arn    = module.ecs.service_arn
+}
