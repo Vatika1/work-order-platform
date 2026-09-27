@@ -202,6 +202,11 @@ public class FileControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldCreateDownloadUrl(){
+        String token = login("alice@acme.com");
+        UUID workOrderId = createWorkOrder(token, "Bracket redesign");
+
+        ResponseEntity<UploadUrlResponse> response =
+                createUploadUrl(token, workOrderId, "drawing.pdf", "application/pdf");
 
     }
 
