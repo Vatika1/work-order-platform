@@ -5,7 +5,7 @@ terraform {
   }
   backend "s3" {
     bucket  = "vatika-work-order-tfstate"
-    key     = "staging/terraform.tfstate"
+    key     = "staging/persistent/terraform.tfstate"
     region  = "ca-central-1"
     encrypt = true
   }

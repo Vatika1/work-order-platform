@@ -2,6 +2,8 @@ provider "aws" {
   region = var.region
 }
 
+data "aws_caller_identity" "current" {}
+
 module "network" {
   source             = "../../modules/network"
   name               = var.name
@@ -26,25 +28,12 @@ module "rds" {
   db_password       = var.db_password
 }
 
-module "ecs" {
-  source            = "../../modules/ecs-service"
-  name              = var.name
-  region            = var.region
-  image             = "${module.ecr.repository_url}:${var.image_tag}"
-  subnet_ids        = module.network.public_subnet_ids
-  security_group_id = module.network.app_sg_id
-  db_endpoint       = module.rds.endpoint
-  db_name           = "workorder"
-  db_username       = "workorder"
-  db_password       = var.db_password
-  bucket_name       = module.s3.bucket_name
-  bucket_arn        = module.s3.bucket_arn
-}
-
+# ECS lives in staging-ephemeral, so the service ARN is built from the naming
+# convention (cluster = <name>-cluster, service = <name>-service) instead of module.ecs.
 module "github_oidc" {
   source             = "../../modules/github-oidc"
   name               = var.name
   github_repo        = "Vatika1/work-order-platform"
   ecr_repository_arn = module.ecr.repository_arn
-  ecs_service_arn    = module.ecs.service_arn
+  ecs_service_arn    = "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:service/${var.name}-cluster/${var.name}-service"
 }
