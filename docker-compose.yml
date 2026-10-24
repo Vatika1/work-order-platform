@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: workorder-pg
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: workorder
+      POSTGRES_USER: workorder
+      POSTGRES_PASSWORD: workorder
+    volumes:
+      - workorder-pg-data:/var/lib/postgresql/data
+
+  localstack:
+    image: localstack/localstack:3.6
+    container_name: workorder-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./localstack-init:/etc/localstack/init/ready.d
+
+  redis:
+    image: redis:7-alpine
+    container_name: workorder-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  workorder-pg-data:
