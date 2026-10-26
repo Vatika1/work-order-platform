@@ -1,12 +1,12 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/workorder
+    url: jdbc:postgresql://localhost:5433/workorder
     username: workorder
     password: workorder
   data:
     redis:
       host: localhost
-      port: 6379
+      port: 6380
 
 app:
   jwt:
@@ -15,5 +15,6 @@ app:
     endpoint: http://localhost:4566
     access-key: test
     secret-key: test
+    region: us-east-1
   s3:
     bucket: vatika-work-order-staging-files
