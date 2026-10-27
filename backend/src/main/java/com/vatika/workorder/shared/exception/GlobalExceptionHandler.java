@@ -36,8 +36,9 @@ public class GlobalExceptionHandler {
                 .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                 .toList();
         HttpStatus status = HttpStatus.BAD_REQUEST;
+        String correlationId = org.slf4j.MDC.get("correlationId");
         ErrorResponse body = new ErrorResponse(Instant.now(), status.value(), status.getReasonPhrase(),
-                "Validation failed", request.getRequestURI(), details);
+                "Validation failed", request.getRequestURI(), correlationId, details);
         return ResponseEntity.status(status).body(body);
     }
 

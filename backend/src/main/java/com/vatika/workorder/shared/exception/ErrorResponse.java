@@ -9,9 +9,11 @@ public record ErrorResponse (
         String error,
         String message,
         String path,
+        String correlationId,
         List<String> details
 ){
     public static ErrorResponse of(int status, String error, String message, String path) {
-        return new ErrorResponse(Instant.now(), status, error, message, path, List.of());
+        String correlationId = org.slf4j.MDC.get("correlationId");
+        return new ErrorResponse(Instant.now(), status, error, message, path, correlationId, List.of());
     }
 }

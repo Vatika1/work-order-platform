@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -21,10 +22,14 @@ public class TenantFilter extends OncePerRequestFilter {
             if (auth != null && auth.getPrincipal() instanceof JwtPrincipal principal
                     && principal.clientId() != null) {
                 TenantContext.set(principal.clientId());
+                MDC.put("clientId", principal.clientId().toString());
+                MDC.put("userId", principal.userId().toString());
             }
             filterChain.doFilter(request, response);
         } finally {
             TenantContext.clear();
+            MDC.remove("clientId");
+            MDC.remove("userId");
         }
     }
 }
