@@ -1,0 +1,5 @@
+app:
+  aws:
+    region: ca-central-1
+  s3:
+    bucket: vatika-work-order-staging-files

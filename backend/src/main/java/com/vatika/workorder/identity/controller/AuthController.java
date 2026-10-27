@@ -1,6 +1,7 @@
 package com.vatika.workorder.identity.controller;
 
 import com.vatika.workorder.identity.dto.LoginRequest;
+import com.vatika.workorder.identity.dto.RegisterRequest;
 import com.vatika.workorder.identity.dto.TokenResponse;
 import com.vatika.workorder.identity.service.AuthService;
 import jakarta.validation.Valid;
@@ -25,5 +26,11 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<TokenResponse> register(@Valid @RequestBody RegisterRequest request) {
+        TokenResponse response = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
