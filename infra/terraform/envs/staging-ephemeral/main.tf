@@ -10,6 +10,7 @@ module "ecs" {
   source            = "../../modules/ecs-service"
   name              = var.name
   region            = var.region
+  vpc_id            = local.persistent.vpc_id
   image             = "${local.persistent.ecr_repository_url}:${var.image_tag}"
   subnet_ids        = local.persistent.public_subnet_ids
   security_group_id = local.persistent.app_sg_id
