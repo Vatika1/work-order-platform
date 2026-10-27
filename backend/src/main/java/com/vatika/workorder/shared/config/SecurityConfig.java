@@ -1,5 +1,6 @@
 package com.vatika.workorder.shared.config;
 
+import com.vatika.workorder.shared.security.JsonAuthenticationEntryPoint;
 import com.vatika.workorder.shared.security.JwtAuthenticationFilter;
 import com.vatika.workorder.shared.tenancy.TenantFilter;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final TenantFilter tenantFilter;
+    private final JsonAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -37,7 +39,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/clients/**").hasRole("PLATFORM_ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(tenantFilter, JwtAuthenticationFilter.class);
+                .addFilterAfter(tenantFilter, JwtAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint));
 
         return http.build();
     }
