@@ -13,3 +13,5 @@ variable "db_password" {
 variable "bucket_name"       { type = string }
 variable "bucket_arn"        { type = string }
 variable "vpc_id"            { type = string }
+variable "spring_profile"      { type = string }
+variable "jwt_secret_ssm_name" { type = string }

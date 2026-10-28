@@ -20,6 +20,8 @@ module "ecs" {
   db_password       = var.db_password
   bucket_name       = local.persistent.files_bucket
   bucket_arn        = local.persistent.files_bucket_arn
+  spring_profile      = "staging"
+  jwt_secret_ssm_name = "/vatika-work-order/staging/jwt-secret"
 }
 
 resource "aws_security_group_rule" "rds_from_ecs" {

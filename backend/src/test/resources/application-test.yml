@@ -1,0 +1,3 @@
+app:
+  jwt:
+    secret: integration-test-secret-not-used-anywhere-else-must-be-at-least-64-bytes
