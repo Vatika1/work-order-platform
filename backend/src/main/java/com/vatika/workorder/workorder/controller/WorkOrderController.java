@@ -21,7 +21,7 @@ public class WorkOrderController {
     private final WorkOrderService workOrderService;
 
     @PostMapping
-    public ResponseEntity<WorkOrderResponse> login(@Valid @RequestBody CreateWorkOrderRequest request) {
+    public ResponseEntity<WorkOrderResponse> create(@Valid @RequestBody CreateWorkOrderRequest request) {
         WorkOrderResponse response = workOrderService.create(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
