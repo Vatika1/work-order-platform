@@ -23,7 +23,6 @@ management:
     redis:
       enabled: false
 
-app:
   app:
     jwt:
       secret: ${JWT_SECRET}
