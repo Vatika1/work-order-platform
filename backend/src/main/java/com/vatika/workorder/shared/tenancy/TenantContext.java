@@ -1,5 +1,7 @@
 package com.vatika.workorder.shared.tenancy;
 
+import com.vatika.workorder.shared.exception.TenantContextMissingException;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,7 +23,7 @@ public final class TenantContext {
     public static UUID require() {
         UUID id = CURRENT.get();
         if (id == null) {
-            throw new IllegalStateException("No tenant in context");
+            throw new TenantContextMissingException();
         }
         return id;
     }

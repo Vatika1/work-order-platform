@@ -48,9 +48,10 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
-        return build(HttpStatus.FORBIDDEN, "Operation not permitted for this account", request);
+    @ExceptionHandler(TenantContextMissingException.class)
+    public ResponseEntity<ErrorResponse> handleTenantContextMissing(TenantContextMissingException ex,
+                                                                    HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
 
     @ExceptionHandler(InvalidStateTransitionException.class)
