@@ -11,6 +11,8 @@ import com.vatika.workorder.shared.exception.NotFoundException;
 import com.vatika.workorder.shared.exception.UploadNotCompletedException;
 import com.vatika.workorder.shared.security.JwtPrincipal;
 import com.vatika.workorder.shared.tenancy.TenantContext;
+import com.vatika.workorder.workorder.model.WorkOrder;
+import com.vatika.workorder.workorder.repository.WorkOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,6 +38,7 @@ public class FileService {
     private final FileVersionRepository fileVersionRepository;
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private final WorkOrderRepository workOrderRepository;
 
     @Value("${app.s3.bucket}")
     private String bucket;
@@ -50,6 +53,10 @@ public class FileService {
         UUID fileAssetId = UUID.randomUUID();
         JwtPrincipal principal = (JwtPrincipal) SecurityContextHolder
                 .getContext().getAuthentication().getPrincipal();
+        WorkOrder workOrder = workOrderRepository
+                .findByIdAndClientId(request.workOrderId(), TenantContext.require())
+                .orElseThrow(() -> new NotFoundException("Work order not found: " + request.workOrderId()));
+
         UUID userId = principal.userId();
         Instant now = Instant.now();
 
@@ -58,7 +65,7 @@ public class FileService {
         FileAsset fileAsset = FileAsset.builder()
                 .id(fileAssetId)
                 .clientId(clientId)
-                .workOrderId(request.workOrderId())
+                .workOrderId(workOrder.getId())
                 .fileName(request.fileName())
                 .contentType(request.contentType())
                 .uploadedBy(userId)
