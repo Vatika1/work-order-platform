@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -62,6 +63,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UploadNotCompletedException.class)
     public ResponseEntity<ErrorResponse> handleUploadNotCompleted(UploadNotCompletedException ex, HttpServletRequest request) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException ex,
+                                                          HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "Malformed request body", request);
     }
 
     @ExceptionHandler(Exception.class)
