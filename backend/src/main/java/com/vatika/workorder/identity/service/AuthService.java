@@ -8,6 +8,7 @@ import com.vatika.workorder.identity.dto.TokenResponse;
 import com.vatika.workorder.identity.model.Role;
 import com.vatika.workorder.identity.model.User;
 import com.vatika.workorder.identity.repository.UserRepository;
+import com.vatika.workorder.shared.exception.DuplicateResourceException;
 import com.vatika.workorder.shared.security.JwtProperties;
 import com.vatika.workorder.shared.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +42,10 @@ public class AuthService {
     @Transactional
     public TokenResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new DuplicateResourceException("Email already taken: " + request.email());
         }
         if (clientRepository.existsByName(request.companyName())) {
-            throw new IllegalArgumentException("Company name already taken");
+            throw new DuplicateResourceException("Company name already taken: " + request.companyName());
         }
 
         Client client = new Client(request.companyName());
