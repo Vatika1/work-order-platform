@@ -73,6 +73,20 @@ resource "aws_iam_role_policy" "task_s3" {
   })
 }
 
+resource "aws_iam_role_policy" "task_cloudwatch_metrics" {
+  name = "${var.name}-cloudwatch-metrics"
+  role = aws_iam_role.task.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Action    = "cloudwatch:PutMetricData"
+      Resource  = "*"
+      Condition = { StringEquals = { "cloudwatch:namespace" = "WorkOrderPlatform" } }
+    }]
+  })
+}
+
 # --- Task + service ---
 
 resource "aws_ecs_task_definition" "this" {
@@ -187,4 +201,5 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.this.arn
   }
 }
+
 

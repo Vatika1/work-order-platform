@@ -2,4 +2,10 @@ app:
   aws:
     region: ca-central-1
   s3:
-    bucket: vatika-work-order-staging-files
+    bucket: vatika-work-order-staging-file
+
+management:
+  metrics:
+    distribution:
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
