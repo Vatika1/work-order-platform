@@ -11,13 +11,13 @@ public class WorkOrderTransitionsTest {
 
     @Test
     void allowsDraftToSubmitted(){
-        assertDoesNotThrow(() -> WorkOrderTransitions.canTransition(DRAFT, SUBMITTED));
+        assertDoesNotThrow(() -> WorkOrderTransitions.validateTransition(DRAFT, SUBMITTED));
     }
 
     @Test
     void rejectsDraftToCompleted(){
         InvalidStateTransitionException exception = assertThrows(InvalidStateTransitionException.class,
-                () -> WorkOrderTransitions.canTransition(
+                () -> WorkOrderTransitions.validateTransition(
                         WorkOrderStatus.DRAFT,
                         COMPLETED
                 ));
@@ -30,7 +30,7 @@ public class WorkOrderTransitionsTest {
     void rejectsAnyTransitionFromCompleted(){
         for (WorkOrderStatus target : WorkOrderStatus.values()) {
             assertThrows(InvalidStateTransitionException.class,
-                    () -> WorkOrderTransitions.canTransition(COMPLETED, target));
+                    () -> WorkOrderTransitions.validateTransition(COMPLETED, target));
         }
     }
 
@@ -38,7 +38,60 @@ public class WorkOrderTransitionsTest {
     void rejectsAnyTransitionFromCancelled(){
         for (WorkOrderStatus target : WorkOrderStatus.values()) {
             assertThrows(InvalidStateTransitionException.class,
-                    () -> WorkOrderTransitions.canTransition(CANCELLED, target));
+                    () -> WorkOrderTransitions.validateTransition(CANCELLED, target));
+        }
+    }
+
+    @Test
+    void approved_toCompleted_isAllowed() {
+        assertDoesNotThrow(() -> WorkOrderTransitions.validateTransition(APPROVED, COMPLETED));
+    }
+
+    @Test
+    void approved_toAnyStatusExceptCompleted_throwsInvalidStateTransition() {
+        for(WorkOrderStatus target: WorkOrderStatus.values()){
+            if(target != COMPLETED){
+                assertThrows(InvalidStateTransitionException.class,
+                        () -> WorkOrderTransitions.validateTransition(APPROVED, target),
+                        "APPROVED -> " + target + " should be rejected");
+            }
+        }
+    }
+
+    @Test
+    void changesRequested_toInProgress_isAllowed() {
+        assertDoesNotThrow(() -> WorkOrderTransitions.validateTransition(CHANGES_REQUESTED, IN_PROGRESS));
+    }
+
+    @Test
+    void changesRequested_toAnyStatusExceptCompleted_throwsInvalidStateTransition() {
+        for(WorkOrderStatus target: WorkOrderStatus.values()){
+            if(target != IN_PROGRESS){
+                assertThrows(InvalidStateTransitionException.class,
+                        () -> WorkOrderTransitions.validateTransition(CHANGES_REQUESTED, target),
+                        "CHANGES_REQUESTED -> " + target + " should be rejected");
+            }
+        }
+    }
+
+    @Test
+    void inReview_toApproved_isAllowed() {
+        assertDoesNotThrow(() -> WorkOrderTransitions.validateTransition(IN_REVIEW, APPROVED));
+    }
+
+    @Test
+    void inReview_toChangesRequested_isAllowed() {
+        assertDoesNotThrow(() -> WorkOrderTransitions.validateTransition(IN_REVIEW, CHANGES_REQUESTED));
+    }
+
+    @Test
+    void inReview_toAnyStatusExceptCompleted_throwsInvalidStateTransition() {
+        for(WorkOrderStatus target: WorkOrderStatus.values()){
+            if(target != APPROVED && target != CHANGES_REQUESTED){
+                assertThrows(InvalidStateTransitionException.class,
+                        () -> WorkOrderTransitions.validateTransition(IN_REVIEW, target),
+                        "IN_REVIEW -> " + target + " should be rejected");
+            }
         }
     }
 }

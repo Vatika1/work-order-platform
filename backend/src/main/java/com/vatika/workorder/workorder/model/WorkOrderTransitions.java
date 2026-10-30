@@ -11,15 +11,17 @@ public class WorkOrderTransitions {
 
     private static final Map<WorkOrderStatus, Set<WorkOrderStatus>> TRANSITIONS =
             Map.of(
-                    DRAFT, Set.of(SUBMITTED, CANCELLED),
-                    SUBMITTED, Set.of(IN_PROGRESS, CANCELLED),
-                    IN_PROGRESS, Set.of(IN_REVIEW),
-                    IN_REVIEW, Set.of(IN_PROGRESS, COMPLETED),
-                    COMPLETED, Set.of(),
-                    CANCELLED, Set.of()
+                    DRAFT,             Set.of(SUBMITTED, CANCELLED),
+                    SUBMITTED,         Set.of(IN_PROGRESS, CANCELLED),
+                    IN_PROGRESS,       Set.of(IN_REVIEW),
+                    IN_REVIEW,         Set.of(APPROVED, CHANGES_REQUESTED),
+                    CHANGES_REQUESTED, Set.of(IN_PROGRESS),
+                    APPROVED,          Set.of(COMPLETED),
+                    COMPLETED,         Set.of(),
+                    CANCELLED,         Set.of()
             );
 
-    public static void canTransition(WorkOrderStatus from, WorkOrderStatus to){
+    public static void validateTransition(WorkOrderStatus from, WorkOrderStatus to){
 
         Set<WorkOrderStatus> allowed = TRANSITIONS.get(from);
 

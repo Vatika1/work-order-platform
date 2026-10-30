@@ -62,8 +62,9 @@ public class WorkOrderService {
         WorkOrder workOrder =workOrderRepository.findByIdAndClientId(id, clientId)
                 .orElseThrow(() -> new NotFoundException("Work order not found"));
 
-        WorkOrderTransitions.canTransition(workOrder.getStatus(), target);
+        WorkOrderTransitions.validateTransition(workOrder.getStatus(), target);
         workOrder.setStatus(target);
+        workOrder.setUpdatedAt(Instant.now());
         WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
 
         return WorkOrderResponse.from(savedWorkOrder);
