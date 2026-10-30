@@ -43,6 +43,9 @@ public class FileService {
     @Value("${app.s3.bucket}")
     private String bucket;
 
+    @Value("${app.s3.presign-ttl}")
+    private Duration presignTtl;
+
     private String buildKey(UUID clientId, UUID fileAssetId, int version) {
         return "clients/" + clientId + "/" + fileAssetId + "/v" + version;
     }
@@ -85,7 +88,7 @@ public class FileService {
         //Request to generate a pre-signed upload URL. Take this upload objectRequest and make me a temporary signed URL for it,
         // valid for this long.
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5))
+                .signatureDuration(presignTtl)
                 .putObjectRequest(objectRequest)
                 .build();
 
@@ -143,7 +146,7 @@ public class FileService {
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5))
+                .signatureDuration(presignTtl)
                 .getObjectRequest(objectRequest)
                 .build();
 
