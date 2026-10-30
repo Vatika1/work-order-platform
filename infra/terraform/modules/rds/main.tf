@@ -3,6 +3,27 @@ resource "aws_db_subnet_group" "this" {
   subnet_ids = var.subnet_ids
 }
 
+resource "aws_db_parameter_group" "this" {
+  name   = "${var.name}-pg16"
+  family = "postgres16"
+
+  parameter {
+    name         = "shared_preload_libraries"
+    value        = "pg_stat_statements"
+    apply_method = "pending-reboot"
+  }
+
+  parameter {
+    name  = "pg_stat_statements.track"
+    value = "all"
+  }
+
+  parameter {
+    name  = "log_min_duration_statement"
+    value = "500"
+  }
+}
+
 resource "aws_db_instance" "this" {
   identifier             = "${var.name}-postgres"
   engine                 = "postgres"
@@ -16,4 +37,9 @@ resource "aws_db_instance" "this" {
   vpc_security_group_ids = [var.security_group_id]
   publicly_accessible    = false
   skip_final_snapshot    = true
+
+  parameter_group_name            = aws_db_parameter_group.this.name
+  performance_insights_enabled    = true
+  enabled_cloudwatch_logs_exports = ["postgresql"]
+  apply_immediately               = true
 }

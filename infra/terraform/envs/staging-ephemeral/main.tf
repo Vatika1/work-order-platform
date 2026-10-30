@@ -32,3 +32,16 @@ resource "aws_security_group_rule" "rds_from_ecs" {
   security_group_id        = local.persistent.db_sg_id
   source_security_group_id = local.persistent.app_sg_id
 }
+
+module "cloudwatch" {
+  source           = "../../modules/cloudwatch"
+  name             = var.name
+  region           = var.region
+  namespace        = "WorkOrderPlatform"
+  alb_arn_suffix   = module.ecs.alb_arn_suffix
+  tg_arn_suffix    = module.ecs.tg_arn_suffix
+  ecs_cluster_name = module.ecs.cluster_name
+  ecs_service_name = module.ecs.service_name
+  rds_instance_id  = local.persistent.rds_instance_id
+  log_group        = module.ecs.log_group_name
+}

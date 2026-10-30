@@ -9,3 +9,4 @@ output "files_bucket"       { value = module.s3.bucket_name }
 output "files_bucket_arn"   { value = module.s3.bucket_arn }
 output "github_deploy_role_arn" { value = module.github_oidc.role_arn }
 output "vpc_id"             { value = module.network.vpc_id }
+output "rds_instance_id"    { value = module.rds.instance_id }

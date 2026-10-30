@@ -24,6 +24,7 @@ public class TenantFilter extends OncePerRequestFilter {
                 TenantContext.set(principal.clientId());
                 MDC.put("clientId", principal.clientId().toString());
                 MDC.put("userId", principal.userId().toString());
+                request.setAttribute("clientId", principal.clientId().toString());
             }
             filterChain.doFilter(request, response);
         } finally {
