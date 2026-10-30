@@ -1,5 +1,6 @@
 package com.vatika.workorder.shared.config;
 
+import com.vatika.workorder.shared.security.JsonAccessDeniedHandler;
 import com.vatika.workorder.shared.security.JsonAuthenticationEntryPoint;
 import com.vatika.workorder.shared.security.JwtAuthenticationFilter;
 import com.vatika.workorder.shared.tenancy.TenantFilter;
@@ -25,6 +26,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final TenantFilter tenantFilter;
     private final JsonAuthenticationEntryPoint authenticationEntryPoint;
+    private final JsonAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,7 +42,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(tenantFilter, JwtAuthenticationFilter.class)
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint));
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler));
 
         return http.build();
     }
