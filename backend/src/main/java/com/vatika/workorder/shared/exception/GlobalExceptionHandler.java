@@ -106,6 +106,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.METHOD_NOT_ALLOWED, "Method " + ex.getMethod() + " not supported", request);
     }
 
+    @ExceptionHandler(ClientSuspendedException.class)
+    public ResponseEntity<ErrorResponse> handleClientSuspended(ClientSuspendedException ex,
+                                                               HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception on {} {}", request.getMethod(), request.getRequestURI(), ex);

@@ -1,6 +1,7 @@
 package com.vatika.workorder.identity.service;
 
 import com.vatika.workorder.client.model.Client;
+import com.vatika.workorder.client.model.ClientStatus;
 import com.vatika.workorder.client.repository.ClientRepository;
 import com.vatika.workorder.identity.dto.LoginRequest;
 import com.vatika.workorder.identity.dto.RegisterRequest;
@@ -8,6 +9,7 @@ import com.vatika.workorder.identity.dto.TokenResponse;
 import com.vatika.workorder.identity.model.Role;
 import com.vatika.workorder.identity.model.User;
 import com.vatika.workorder.identity.repository.UserRepository;
+import com.vatika.workorder.shared.exception.ClientSuspendedException;
 import com.vatika.workorder.shared.exception.DuplicateResourceException;
 import com.vatika.workorder.shared.security.JwtProperties;
 import com.vatika.workorder.shared.security.JwtService;
@@ -33,6 +35,12 @@ public class AuthService {
                 .filter(User::isEnabled)
                 .filter(u-> passwordEncoder.matches(request.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+
+        if(user.getClientId() != null){
+            Client client = clientRepository.findById(user.getClientId())
+                    .filter(c -> c.getStatus() == ClientStatus.ACTIVE)
+                    .orElseThrow(() -> new ClientSuspendedException());
+        }
 
         String token = jwtService.issueAccessToken(user.getId(), user.getEmail(), user.getRole(), user.getClientId());
 
