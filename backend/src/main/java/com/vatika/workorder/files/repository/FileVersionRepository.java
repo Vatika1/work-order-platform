@@ -8,4 +8,7 @@ import java.util.UUID;
 
 public interface FileVersionRepository extends JpaRepository<FileVersion, UUID> {
     Optional<FileVersion> findTopByFileAssetIdOrderByVersionNumberDesc(UUID fileAssetId);
+
+    boolean existsByFileAssetIdAndVersionNumber(UUID fileAssetId, int versionNumber);
+
 }

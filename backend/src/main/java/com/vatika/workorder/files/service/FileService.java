@@ -132,16 +132,19 @@ public class FileService {
     }
 
     @Transactional
-    public void confirmUpload(UUID fileAssetId) {
+    public void confirmUpload(UUID fileAssetId, int versionNumber) {
         UUID clientId = TenantContext.require();
-        fileAssetRepository.findByIdAndClientId(fileAssetId, clientId)
+        FileAsset fileAsset = fileAssetRepository.findByIdAndClientId(fileAssetId, clientId)
                 .orElseThrow(() -> new NotFoundException("File not found"));
 
-        int nextVersion = fileVersionRepository.findTopByFileAssetIdOrderByVersionNumberDesc(fileAssetId)
-                .map(v -> v.getVersionNumber() + 1)
-                .orElse(1);
+        if (versionNumber < 1 || versionNumber > fileAsset.getLastAllocatedVersion()) {
+            throw new NotFoundException("Version " + versionNumber + " not found");
+        }
 
-        String key = buildKey(clientId, fileAssetId, nextVersion);
+        if (fileVersionRepository.existsByFileAssetIdAndVersionNumber(fileAssetId, versionNumber)) {
+            return;
+        }
+        String key = buildKey(clientId, fileAssetId, versionNumber);
         HeadObjectResponse head;
         try {
             head = s3Client.headObject(HeadObjectRequest.builder()
@@ -151,12 +154,11 @@ public class FileService {
         } catch (NoSuchKeyException e) {
             throw new UploadNotCompletedException(fileAssetId);
         }
-
         FileVersion fileVersion = FileVersion.builder()
                 .id(UUID.randomUUID())
                 .fileAssetId(fileAssetId)
                 .s3Key(key)
-                .versionNumber(nextVersion)
+                .versionNumber(versionNumber)
                 .createdAt(Instant.now())
                 .sizeBytes(head.contentLength())
                 .build();

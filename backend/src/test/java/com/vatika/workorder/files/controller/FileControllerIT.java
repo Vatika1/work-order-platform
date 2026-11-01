@@ -3,6 +3,7 @@ package com.vatika.workorder.files.controller;
 import com.vatika.workorder.AbstractIntegrationTest;
 import com.vatika.workorder.client.model.Client;
 import com.vatika.workorder.client.repository.ClientRepository;
+import com.vatika.workorder.files.dto.DownloadUrlResponse;
 import com.vatika.workorder.files.dto.UploadUrlRequest;
 import com.vatika.workorder.files.dto.UploadUrlResponse;
 import com.vatika.workorder.files.repository.FileAssetRepository;
@@ -191,7 +192,7 @@ public class FileControllerIT extends AbstractIntegrationTest {
         headers.setBearerAuth(token);
         ResponseEntity<Void> voidResponseEntity =
                 rest.postForEntity(
-                        "/files/" + body.fileAssetId() + "/confirm",
+                        "/files/" + body.fileAssetId() + "/versions/1/confirm",
                         new HttpEntity<>(headers),
                         Void.class
                 );
@@ -200,14 +201,52 @@ public class FileControllerIT extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.NO_CONTENT);
     }
 
+    private void putToS3(String uploadUrl, String content) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        ResponseEntity<String> response = rest.exchange(
+                URI.create(uploadUrl), HttpMethod.PUT,
+                new HttpEntity<>(content.getBytes(), headers), String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    private ResponseEntity<String> confirm(String token, UUID fileAssetId, int version) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return rest.postForEntity(
+                "/files/" + fileAssetId + "/versions/" + version + "/confirm",
+                new HttpEntity<>(headers), String.class);
+    }
+
+    private ResponseEntity<UploadUrlResponse> createVersionUploadUrl(String token, UUID fileAssetId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return rest.postForEntity(
+                "/files/" + fileAssetId + "/versions/upload-url",
+                new HttpEntity<>(headers), UploadUrlResponse.class);
+    }
+
     @Test
     void shouldCreateDownloadUrl(){
         String token = login("alice@acme.com");
         UUID workOrderId = createWorkOrder(token, "Bracket redesign");
 
-        ResponseEntity<UploadUrlResponse> response =
-                createUploadUrl(token, workOrderId, "drawing.pdf", "application/pdf");
+        UploadUrlResponse v1 = createUploadUrl(token, workOrderId, "drawing.pdf", "application/pdf").getBody();
+        putToS3(v1.uploadUrl(), "version one");
+        confirm(token, v1.fileAssetId(), 1);
 
+        UploadUrlResponse v2 = createVersionUploadUrl(token, v1.fileAssetId()).getBody();
+        putToS3(v2.uploadUrl(), "version two");
+        confirm(token, v1.fileAssetId(), 2);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        ResponseEntity<DownloadUrlResponse> response = rest.exchange(
+                "/files/" + v1.fileAssetId() + "/download-url", HttpMethod.GET,
+                new HttpEntity<>(headers), DownloadUrlResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().downloadUrl()).contains("/v2?");
     }
 
     @Test

@@ -27,9 +27,9 @@ public class FileController {
                 .body(response);
     }
 
-    @PostMapping("/{id}/confirm")
-    public ResponseEntity<Void> confirmUpload(@PathVariable UUID id) {
-        fileService.confirmUpload(id);
+    @PostMapping("/{id}/versions/{versionNumber}/confirm")
+    public ResponseEntity<Void> confirmUpload(@PathVariable UUID id, @PathVariable int versionNumber) {
+        fileService.confirmUpload(id, versionNumber);
         return ResponseEntity.noContent().build();
     }
 
