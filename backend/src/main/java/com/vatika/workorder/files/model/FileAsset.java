@@ -38,4 +38,7 @@ public class FileAsset {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @Column(name = "last_allocated_version", nullable = false)
+    private int lastAllocatedVersion;
 }

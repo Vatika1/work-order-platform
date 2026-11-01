@@ -39,4 +39,11 @@ public class FileController {
         return ResponseEntity.ok(response);
 
     }
+
+    @PostMapping("/{id}/versions/upload-url")
+    public ResponseEntity<UploadUrlResponse> createVersionUploadUrl(@PathVariable UUID id) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(fileService.createVersionUploadUrl(id));
+    }
 }

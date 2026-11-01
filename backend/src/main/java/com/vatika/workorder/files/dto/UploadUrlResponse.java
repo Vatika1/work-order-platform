@@ -4,6 +4,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record UploadUrlResponse(
-        UUID fileAssetId, String uploadUrl, Instant expiresAt
+        UUID fileAssetId, String uploadUrl, Instant expiresAt, int versionNumber
 ) {
 }

@@ -1,0 +1,1 @@
+ALTER TABLE file_asset ADD COLUMN last_allocated_version INT NOT NULL DEFAULT 1;

@@ -76,6 +76,7 @@ public class FileService {
                 .updatedAt(now)
                 .build();
 
+        fileAsset.setLastAllocatedVersion(1);
         fileAssetRepository.save(fileAsset);
 
         //request to upload this file "key" in S3 bucket
@@ -96,7 +97,38 @@ public class FileService {
         PresignedPutObjectRequest presigned = s3Presigner.presignPutObject(presignRequest);
 
         return new UploadUrlResponse(fileAssetId, presigned.url().toString(),
-                presigned.expiration());
+                presigned.expiration(), 1);
+    }
+
+    private UploadUrlResponse presignUpload(UUID clientId, FileAsset asset, int version) {
+        String key = buildKey(clientId, asset.getId(), version);
+
+        PutObjectRequest objectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(asset.getContentType())
+                .build();
+
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(presignTtl)
+                .putObjectRequest(objectRequest)
+                .build();
+
+        PresignedPutObjectRequest presigned = s3Presigner.presignPutObject(presignRequest);
+
+        return new UploadUrlResponse(asset.getId(),
+                presigned.url().toString(), presigned.expiration(), version);
+    }
+
+    @Transactional
+    public UploadUrlResponse createVersionUploadUrl(UUID fileAssetId){
+        UUID clientId = TenantContext.require();
+        FileAsset fileAsset = fileAssetRepository.findByIdAndClientIdForUpdate(fileAssetId, clientId)
+                .orElseThrow(() -> new NotFoundException("File not found"));
+        int nextVersion = fileAsset.getLastAllocatedVersion() + 1;
+        fileAsset.setLastAllocatedVersion(nextVersion);
+        fileAsset.setUpdatedAt(Instant.now());
+        return presignUpload(clientId, fileAsset, nextVersion);
     }
 
     @Transactional
