@@ -205,4 +205,15 @@ public class WorkOrderControllerIT extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
+    @Test
+    void loginWithWrongContentTypeReturns415() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        HttpEntity<String> request = new HttpEntity<>("{\"email\":\"alice@acme.com\",\"password\":\"password123\"}", headers);
+
+        ResponseEntity<String> response = rest.postForEntity("/auth/login", request, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    }
+
 }
