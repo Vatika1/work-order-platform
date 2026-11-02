@@ -1,8 +1,6 @@
 package com.vatika.workorder.files.service;
 
-import com.vatika.workorder.files.dto.DownloadUrlResponse;
-import com.vatika.workorder.files.dto.UploadUrlRequest;
-import com.vatika.workorder.files.dto.UploadUrlResponse;
+import com.vatika.workorder.files.dto.*;
 import com.vatika.workorder.files.model.FileAsset;
 import com.vatika.workorder.files.model.FileVersion;
 import com.vatika.workorder.files.repository.FileAssetRepository;
@@ -28,6 +26,9 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -99,6 +100,28 @@ public class FileService {
         return new UploadUrlResponse(fileAssetId, presigned.url().toString(),
                 presigned.expiration(), 1);
     }
+
+    @Transactional(readOnly = true)
+    public List<FileWithVersionsResponse> listFilesForWorkOrder(UUID workOrderId){
+        UUID clientId = TenantContext.require();
+        WorkOrder workOrder = workOrderRepository
+                .findByIdAndClientId(workOrderId, clientId)
+                .orElseThrow(() -> new NotFoundException("Work order not found: " + workOrderId));
+        List<FileAsset> files = fileAssetRepository.findAllByClientIdAndWorkOrderId(clientId, workOrderId);
+        List<FileWithVersionsResponse> fileWithVersionsResponseList = new ArrayList<>();
+        for(FileAsset file: files){
+            List<FileVersion> fileVersionList = file.getVersions();
+            List <FileVersionResponse> filesList = fileVersionList.stream()
+                    .sorted(Comparator.comparing(FileVersion:: getVersionNumber).reversed())
+                    .map(v -> new FileVersionResponse(v.getVersionNumber(), v.getSizeBytes(), v.getCreatedAt()))
+                    .toList();
+            FileWithVersionsResponse fileWithVersionsResponse = new FileWithVersionsResponse(file.getId(),
+                    file.getFileName(), file.getContentType(), filesList);
+            fileWithVersionsResponseList.add(fileWithVersionsResponse);
+        }
+        return fileWithVersionsResponseList;
+    }
+
 
     private UploadUrlResponse presignUpload(UUID clientId, FileAsset asset, int version) {
         String key = buildKey(clientId, asset.getId(), version);

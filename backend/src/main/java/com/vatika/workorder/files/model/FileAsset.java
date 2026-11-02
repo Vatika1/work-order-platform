@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -41,4 +43,7 @@ public class FileAsset {
 
     @Column(name = "last_allocated_version", nullable = false)
     private int lastAllocatedVersion;
+
+    @OneToMany(mappedBy = "fileAsset", fetch = FetchType.LAZY)
+    private List<FileVersion> versions = new ArrayList<>();
 }

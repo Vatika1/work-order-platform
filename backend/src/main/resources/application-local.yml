@@ -7,6 +7,10 @@ spring:
     redis:
       host: localhost
       port: 6380
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: true
 
 app:
   jwt:
@@ -18,3 +22,8 @@ app:
     region: us-east-1
   s3:
     bucket: vatika-work-order-staging-files
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.stat: DEBUG

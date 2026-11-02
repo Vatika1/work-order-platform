@@ -32,4 +32,8 @@ public class FileVersion {
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_asset_id", insertable = false, updatable = false)
+    private FileAsset fileAsset;
 }

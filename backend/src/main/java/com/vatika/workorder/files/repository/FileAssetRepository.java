@@ -1,6 +1,7 @@
 package com.vatika.workorder.files.repository;
 
 import com.vatika.workorder.files.model.FileAsset;
+import com.vatika.workorder.files.model.FileVersion;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
