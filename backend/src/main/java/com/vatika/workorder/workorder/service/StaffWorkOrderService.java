@@ -1,7 +1,12 @@
 package com.vatika.workorder.workorder.service;
 
+import com.vatika.workorder.identity.model.Role;
+import com.vatika.workorder.identity.model.User;
+import com.vatika.workorder.identity.repository.UserRepository;
+import com.vatika.workorder.shared.exception.BadRequestException;
 import com.vatika.workorder.shared.exception.NotFoundException;
 import com.vatika.workorder.shared.security.JwtPrincipal;
+import com.vatika.workorder.workorder.dto.AssignRequest;
 import com.vatika.workorder.workorder.dto.WorkOrderResponse;
 import com.vatika.workorder.workorder.model.WorkOrder;
 import com.vatika.workorder.workorder.model.WorkOrderStatus;
@@ -18,6 +23,7 @@ import java.util.UUID;
 public class StaffWorkOrderService {
 
     private final WorkOrderRepository workOrderRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public WorkOrderResponse claimNext(){
@@ -32,5 +38,19 @@ public class StaffWorkOrderService {
         return WorkOrderResponse.from(savedWorkOrder);
     }
 
+    @Transactional
+    public WorkOrderResponse assign(AssignRequest request, UUID workOrderId){
+        WorkOrder workOrder =workOrderRepository.findById(workOrderId)
+                .orElseThrow(() -> new NotFoundException("Work order not found"));
 
+        User user = userRepository.findById(request.assigneeId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+         if(user.getRole() != Role.STAFF){
+             throw new BadRequestException("Assignee must be a staff user");
+         }
+
+         workOrder.setAssigneeId(user.getId());
+         WorkOrder saved = workOrderRepository.save(workOrder);
+         return WorkOrderResponse.from(saved);
+    }
 }
