@@ -1,0 +1,1 @@
+ALTER TABLE work_orders ADD COLUMN assignee_id UUID REFERENCES users(id);

@@ -42,4 +42,7 @@ public class WorkOrder {
 
     @Version
     private Long version;
+
+    @Column(name = "assignee_id")
+    private UUID assigneeId;
 }

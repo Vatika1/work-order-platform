@@ -5,6 +5,7 @@ import com.vatika.workorder.workorder.model.WorkOrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -18,4 +19,14 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, UUID> {
 
     // staff only — no tenant scope
     Page<WorkOrder> findAllByStatus(WorkOrderStatus status, Pageable pageable);
+
+    @Query(value = """
+        SELECT * FROM work_orders
+        WHERE status = 'SUBMITTED'
+          AND assignee_id IS NULL
+        ORDER BY created_at ASC
+        LIMIT 1
+        FOR UPDATE SKIP LOCKED
+        """, nativeQuery = true)
+    Optional<WorkOrder> findNextUnassignedForUpdate();
 }

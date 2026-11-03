@@ -65,6 +65,19 @@ public class WorkOrderService {
     }
 
     @Transactional
+    public WorkOrderResponse claimNext(){
+        JwtPrincipal principal = (JwtPrincipal) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
+        UUID userId = principal.userId();
+        WorkOrder workOrder =workOrderRepository.findNextUnassignedForUpdate()
+                .orElseThrow(() -> new NotFoundException("Work order not found"));
+        workOrder.setAssigneeId(userId);
+        workOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
+        WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+        return WorkOrderResponse.from(savedWorkOrder);
+    }
+
+    @Transactional
     public WorkOrderResponse transition(UUID id, WorkOrderStatus target){
         UUID clientId = TenantContext.require();
         WorkOrder workOrder =workOrderRepository.findByIdAndClientId(id, clientId)
