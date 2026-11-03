@@ -8,6 +8,7 @@ import com.vatika.workorder.identity.dto.TokenResponse;
 import com.vatika.workorder.identity.model.Role;
 import com.vatika.workorder.identity.model.User;
 import com.vatika.workorder.identity.repository.UserRepository;
+import com.vatika.workorder.workorder.dto.AssignRequest;
 import com.vatika.workorder.workorder.dto.WorkOrderResponse;
 import com.vatika.workorder.workorder.model.WorkOrder;
 import com.vatika.workorder.workorder.model.WorkOrderStatus;
@@ -44,6 +45,7 @@ public class StaffWorkOrderControllerIT extends AbstractIntegrationTest {
     private UUID acmeId;
     private UUID clientUserId;
     private UUID staffId;
+    private UUID staffId2;
 
     @BeforeEach
     void seed() {
@@ -51,6 +53,7 @@ public class StaffWorkOrderControllerIT extends AbstractIntegrationTest {
         acmeId = clientRepository.save(new Client("Acme Corp")).getId();
         clientUserId = userRepository.save(new User("alice@acme.com", hash, "Alice", Role.CLIENT_USER, acmeId)).getId();
         staffId = userRepository.save(new User("staff@test.com", hash,"Staff", Role.STAFF, null)).getId();
+        staffId2 = userRepository.save(new User("another_staff@test.com", hash,"Staff", Role.STAFF, null)).getId();
     }
 
     @AfterEach
@@ -93,6 +96,13 @@ public class StaffWorkOrderControllerIT extends AbstractIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         return rest.exchange(CLAIM_URL, HttpMethod.POST, new HttpEntity<>(headers), type);
+    }
+
+    private <T> ResponseEntity<T> assign(String token, UUID workOrderId, UUID assigneeId, Class<T> type) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return rest.exchange("/staff/work-orders/" + workOrderId + "/assign", HttpMethod.POST,
+                new HttpEntity<>(new AssignRequest(assigneeId), headers), type);
     }
 
     @Test
@@ -169,6 +179,41 @@ public class StaffWorkOrderControllerIT extends AbstractIntegrationTest {
         ResponseEntity<String> response = claim(login("alice@acme.com"), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void assignSetsAssigneeToAnotherStaffUser() {
+        String token = login("staff@test.com");
+        UUID workOrderId = createSubmitted("Assign WO", Instant.now());
+        ResponseEntity<WorkOrderResponse> response = assign(token, workOrderId, staffId2, WorkOrderResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(workOrderRepository.findById(workOrderId).orElseThrow().getAssigneeId()).isEqualTo(staffId2);
+    }
+
+    @Test
+    void assignToNonStaffUserReturns400() {
+        String token = login("staff@test.com");
+        UUID workOrderId = createSubmitted("Assign WO", Instant.now());
+        ResponseEntity<String> response = assign(token, workOrderId, clientUserId, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void assignToUnknownUserReturns404() {
+    }
+
+    @Test
+    void assignUnknownWorkOrderReturns404() {
+    }
+
+    @Test
+    void clientUserCannotAssignReturns403() {
+    }
+
+    @Test
+    void concurrentAssignsNeverLoseAnUpdate() throws Exception {
     }
 
 }
