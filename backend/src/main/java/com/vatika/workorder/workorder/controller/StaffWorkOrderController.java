@@ -22,7 +22,7 @@ public class StaffWorkOrderController {
     public ResponseEntity<WorkOrderResponse> claimNext(){
         WorkOrderResponse response = workOrderService.claimNext();
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .body(response);
     }
 }
