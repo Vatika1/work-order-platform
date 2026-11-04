@@ -138,6 +138,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Content-Type " + ex.getContentType() + " is not supported", request);
     }
 
+    @ExceptionHandler(IdempotencyKeyMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleIdempotencyMismatch(IdempotencyKeyMismatchException ex,
+                                                                   HttpServletRequest request) {
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception on {} {}", request.getMethod(), request.getRequestURI(), ex);

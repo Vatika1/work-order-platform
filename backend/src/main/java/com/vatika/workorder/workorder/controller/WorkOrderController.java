@@ -1,6 +1,8 @@
 package com.vatika.workorder.workorder.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vatika.workorder.shared.dto.PageResponse;
+import com.vatika.workorder.shared.idempotency.IdempotencyService;
 import com.vatika.workorder.workorder.dto.CreateWorkOrderRequest;
 import com.vatika.workorder.workorder.dto.TransitionRequest;
 import com.vatika.workorder.workorder.dto.WorkOrderResponse;
@@ -23,13 +25,17 @@ import java.util.UUID;
 public class WorkOrderController {
 
     private final WorkOrderService workOrderService;
+    private final IdempotencyService idempotencyService;
 
     @PostMapping
-    public ResponseEntity<WorkOrderResponse> create(@Valid @RequestBody CreateWorkOrderRequest request) {
-        WorkOrderResponse response = workOrderService.create(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+    public ResponseEntity<WorkOrderResponse> create(
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @Valid @RequestBody CreateWorkOrderRequest request) throws JsonProcessingException {
+
+        WorkOrderResponse response = (idempotencyKey == null)
+                ? workOrderService.create(request)
+                : idempotencyService.create(idempotencyKey, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
